@@ -1,38 +1,37 @@
 package com.example.demo;
 
-
-import com.example.demo.CartItemDto;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cart")
 public class CartApiController {
-
-    private final List<CartItemDto> cartList = new ArrayList<>();
-
+    private final List<Map<String, Object>> cartList = new ArrayList<>();
     @GetMapping
-    public List<CartItemDto> getCart() {
+    public List<Map<String, Object>> getCart() {
         return cartList;
     }
 
     @PostMapping
-    public List<CartItemDto> addToCart(@RequestBody CartItemDto newItem) {
-        // 💡 [Spring Boot 콘솔] 요청 데이터 출력 로그
+    public List<Map<String, Object>> addToCart(@RequestBody Map<String, Object> newItem) {
+
         System.out.println("========================================");
-        System.out.println("📦 [Spring Boot API Log] 장바구니 추가 요청 수신!");
-        System.out.println(" - 상품 ID : " + newItem.getProductId());
-        System.out.println(" - 상품명   : " + newItem.getName());
-        System.out.println(" - 선택사이즈: " + newItem.getSize());
-        System.out.println(" - 가격     : " + newItem.getPrice() + "원");
+        System.out.println("[API Log] 장바구니 추가 요청 수신!");
+        System.out.println(" - 전달받은 JSON데이터: " + newItem);
         System.out.println("========================================");
 
         boolean exists = false;
-        for (CartItemDto item : cartList) {
-            if (item.getProductId().equals(newItem.getProductId()) && item.getSize().equals(newItem.getSize())) {
-                item.setQty(item.getQty() + newItem.getQty());
+        for (Map<String, Object> item : cartList) {
+            if (item.get("productId").toString().equals(newItem.get("productId").toString()) &&
+                item.get("size").toString().equals(newItem.get("size").toString())) {
+                
+                int currentQty = Integer.parseInt(item.get("qty").toString());
+                int newQty = Integer.parseInt(newItem.get("qty").toString());
+                item.put("qty", currentQty + newQty);
+                
                 exists = true;
                 break;
             }
@@ -46,8 +45,8 @@ public class CartApiController {
     }
 
     @DeleteMapping
-    public List<CartItemDto> clearCart() {
-        System.out.println("🗑️ [Spring Boot API Log] 장바구니 비우기 처리 완료");
+    public List<Map<String, Object>> clearCart() {
+        System.out.println("🗑️ [API Log] 장바구니 비우기 처리 완료");
         cartList.clear();
         return cartList;
     }
