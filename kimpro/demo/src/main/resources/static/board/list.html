@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Godhub - 게시판 목록</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .board-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .board-table th, .board-table td { border-bottom: 1px solid #ddd; padding: 12px; text-align: left; }
+    .board-table th { background-color: #f8f9fa; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo" onclick="location.href='/'">Godhub</div>
+    <nav class="top-nav">
+      <a href="/">홈</a>
+      <a href="about.html">사이트 소개</a>
+      <a href="board/list.html">Q&A 게시판</a>
+    </nav>
+  </header>
+
+  <div class="container" style="padding: 30px 20px;">
+    <h2>📋 고객 Q&A 게시판</h2>
+    <div style="text-align: right;">
+      <a href="board/write.html" class="header-btn" style="text-decoration:none; background:#ff2768; color:white;">✏️ 글 작성하기</a>
+    </div>
+
+    <table class="board-table">
+      <thead>
+        <tr>
+          <th>번호</th>
+          <th>분류</th>
+          <th>제목</th>
+          <th>작성자</th>
+        </tr>
+      </thead>
+      <tbody id="api-board-list">
+        <tr><td colspan="4">데이터를 불러오는 중입니다...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // 💡 Spring Boot REST API (/api/boards) 응답 확인 및 연동
+    fetch('/api/boards')
+      .then(response => response.json())
+      .then(data => {
+        const tbody = document.getElementById('api-board-list');
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4">등록된 게시물이 없습니다.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.map(item => `
+          <tr>
+            <td>${item.id}</td>
+            <td><span style="background:#e9ecef; padding:3px 8px; border-radius:4px; font-size:0.8rem;">${item.category}</span></td>
+            <td><a href="/board/detail.html?id=${item.id}" style="text-decoration:none; color:#333; font-weight:bold;">${item.title}</a></td>
+            <td>${item.writer}</td>
+          </tr>
+        `).join('');
+      })
+      .catch(error => {
+        console.error('API Error:', error);
+        document.getElementById('api-board-list').innerHTML = '<tr><td colspan="4" style="color:red;">API 데이터를 불러오는 데 실패했습니다.</td></tr>';
+      });
+  </script>
+</body>
+</html>

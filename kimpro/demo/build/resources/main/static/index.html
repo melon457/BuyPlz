@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 조별 과제 조건: 사이트 제목 변경 -->
+  <title>Godhub - 우리 조 패션 쇼핑몰</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+  <header>
+    <div class="logo-area">
+      <div class="logo" onclick="location.href='/'">Godhub</div>
+      
+      <!-- 5개 페이지 연결 네비게이션 -->
+      <nav class="top-nav">
+        <a href="/" class="active">홈</a>
+        <a href="about.html">사이트 소개</a>
+        <a href="board/list.html">게시판</a>
+        <a href="board/write.html">글작성</a>
+        <a href="board/detail.html?id=1">상세보기</a>
+      </nav>
+    </div>
+    
+    <div class="header-center">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 상품명을 검색해 보세요..." onkeyup="handleSearch()">
+    </div>
+
+    <div class="header-right">
+      <div id="authBtnArea">
+        <button class="header-btn" onclick="toggleLoginModal(true)">🔑 로그인</button>
+      </div>
+      <button class="header-btn" onclick="toggleCartModal(true)">
+        🛒 장바구니 <span class="cart-badge" id="cart-count">0</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- 조별 과제 조건: index.html 안내 문구 변경 -->
+    <div class="project-banner">
+      📢 <b>[우리 조 프로젝트]</b> Spring Boot REST API 연동 패션 커뮤니티 쇼핑몰에 오신 것을 환영합니다!
+    </div>
+
+    <div id="rootControlBar" style="display:none; margin-bottom:16px; background:#212529; color:white; padding:12px 16px; border-radius:10px; justify-content:space-between; align-items:center;">
+      <span style="font-weight:700; font-size:0.85rem;">👑 루트 관리자 모드 활성화됨</span>
+      <button class="header-btn" style="background:#ff2768; color:white; border:none; padding:6px 12px;" onclick="toggleShowHiddenProducts()">
+        <span id="hiddenToggleText">🙈 숨김 상품 같이 보기</span>
+      </button>
+    </div>
+
+    <div class="filter-wrapper">
+      <div class="trend-bar">
+        <div class="trend-tag active" onclick="filterCategory('ALL', this)">🔥 전체보기</div>
+        <div class="trend-tag" onclick="filterCategory('BLOCKCORE', this)">⚡ 26SS 블록코어</div>
+        <div class="trend-tag" onclick="filterCategory('OVERFIT', this)">🧥 오버핏 자켓</div>
+        <div class="trend-tag" onclick="filterCategory('WINDBREAKER', this)">👖 윈드브레이커</div>
+        <div class="trend-tag" onclick="filterCategory('TIMESALE', this)">⏰ 타임세일</div>
+        <div class="trend-tag" style="background:#fff0f3; color:#ff2768; border-color:#ff2768;" onclick="filterCategory('QNA', this)">💬 고객센터/문의</div>
+      </div>
+
+      <select class="sort-select" id="sortSelect" onchange="handleSortChange()">
+        <option value="recommended">추천순</option>
+        <option value="priceLow">낮은 가격순</option>
+        <option value="priceHigh">높은 가격순</option>
+        <option value="rating">평점 높은순</option>
+      </select>
+    </div>
+
+    <div class="product-grid" id="product-container"></div>
+
+    <section class="cs-page" id="cs-page-container">
+      <div class="cs-container">
+        <div>
+          <div class="cs-title">💬 1:1 문의 남기기</div>
+          <div class="qna-box">
+            <input type="text" id="qnaTitle" class="qna-input" placeholder="문의 제목을 입력해 주세요">
+            <textarea id="qnaContent" class="qna-textarea" placeholder="궁금하신 내용을 자세히 적어주세요."></textarea>
+            <button class="qna-submit-btn" onclick="submitQuestion()">문의 작성하기</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="cs-title">📋 최근 문의 목록 <span style="font-size:0.75rem; color:#868e96; font-weight:400;">(클릭하여 내용 열람)</span></div>
+          <ul class="board-list" id="qnaBoardList"></ul>
+        </div>
+
+        <div class="cs-info-box">
+          <div class="cs-title" style="margin-bottom: 8px;">고객상담센터</div>
+          <div class="cs-phone">1588-0000</div>
+          <div class="cs-desc">
+            평일 10:00 - 18:00 (점심 12:00 - 13:00)<br>
+            <b>루트 계정: root / 1234</b>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="recent-view-widget" id="recentWidget" style="display:none;">
+    <span class="recent-title">최근 본 상품</span>
+    <img id="recentImg" class="recent-img" src="">
+  </div>
+
+  <div class="toast-msg" id="toastMsg">알림 메시지</div>
+
+  <!-- 모달 창 영역 -->
+  <div class="modal-overlay" id="confirmOverlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="font-size: 1.1rem; font-weight: 800;" id="confirmModalTitle">확인 요청</div>
+      </div>
+      <div style="font-size:0.95rem; color:#333; line-height:1.4;" id="confirmModalText">정말 실행하시겠습니까?</div>
+      <div class="confirm-btn-group">
+        <button class="btn-no" onclick="closeConfirmModal(false)">아니오</button>
+        <button class="btn-yes" id="confirmModalYesBtn">예</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="loginOverlay" onclick="closeModalOnBg(event, 'loginOverlay')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="font-size: 1.1rem; font-weight: 800;">로그인</div>
+        <button class="close-btn" onclick="toggleLoginModal(false)">✕</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <input type="text" id="loginId" class="input-field" placeholder="아이디 (루트: root)">
+        <input type="password" id="loginPw" class="input-field" placeholder="비밀번호 (루트: 1234)">
+      </div>
+      <button class="btn-action" onclick="handleLogin()">로그인하기</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="qnaDetailOverlay" onclick="closeModalOnBg(event, 'qnaDetailOverlay')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="font-size: 1.1rem; font-weight: 800;" id="qnaDetailTitle">문의 상세 내용</div>
+        <button class="close-btn" onclick="toggleQnaDetailModal(false)">✕</button>
+      </div>
+      <div style="font-size: 0.8rem; color:#868e96;" id="qnaDetailAuthor">작성자: -</div>
+      <div style="background:#f8f9fa; padding:14px; border-radius:8px; font-size:0.9rem; min-height:80px; line-height:1.5; color:#333;" id="qnaDetailContent">내용이 표시됩니다.</div>
+      <button class="btn-action" style="background:#212529;" onclick="toggleQnaDetailModal(false)">확인</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="cartOverlay" onclick="closeModalOnBg(event, 'cartOverlay')">
+    <div class="cart-drawer">
+      <div class="drawer-header">
+        <div style="font-size: 1.1rem; font-weight: 800;">내 장바구니 🛒</div>
+        <button class="close-btn" onclick="toggleCartModal(false)">✕</button>
+      </div>
+      <div class="drawer-body" id="cartListContainer"></div>
+      <div class="drawer-footer">
+        <div class="total-row">
+          <span>총 결제금액</span>
+          <span class="total-price" id="totalPrice">0원</span>
+        </div>
+        <button class="btn-action" onclick="checkout()">주문하기</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="checkoutOverlay" onclick="closeModalOnBg(event, 'checkoutOverlay')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="font-size: 1.1rem; font-weight: 800;">주문 및 결제 💳</div>
+        <button class="close-btn" onclick="toggleCheckoutModal(false)">✕</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <input type="text" id="orderName" class="input-field" placeholder="수령인 성함">
+        <input type="tel" id="orderPhone" class="input-field" placeholder="연락처 (- 없이 입력)">
+        <input type="text" id="orderAddress" class="input-field" placeholder="배송지 주소">
+      </div>
+      <div class="coupon-row">
+        <input type="text" id="couponCode" class="coupon-input" placeholder="쿠폰코드 (예: WELCOME10)">
+        <button class="coupon-btn" onclick="applyCoupon()">적용</button>
+      </div>
+      <div style="background:#f8f9fa; padding:12px; border-radius:8px; display:flex; justify-content:space-between; font-weight:700;">
+        <span>최종 결제 금액</span>
+        <span class="total-price" id="modalFinalPrice">0원</span>
+      </div>
+      <button class="btn-action" onclick="processPayment()">결제하기</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. 상품 및 게시글 기본 데이터
+    const products = [
+      { id: 1, category: "OUTER", tags: ["WINDBREAKER", "TIMESALE"], name: "오버사이즈 테크니컬 윈드브레이커", discount: "30%", priceNum: 69300, price: "69,300", badge: "🔥 마감임박", rating: 4.8, reviews: 128, hidden: false, img: "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=600&q=80" },
+      { id: 2, category: "TOP", tags: ["BLOCKCORE"], name: "블록코어 럭비 져지 스웨트셔츠", discount: "15%", priceNum: 41650, price: "41,650", badge: "BEST 1위", rating: 4.9, reviews: 240, hidden: false, img: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80" },
+      { id: 3, category: "OUTER", tags: ["OVERFIT", "TIMESALE"], name: "비건 레더 오버핏 자켓", discount: "40%", priceNum: 89400, price: "89,400", badge: "⏰ 타임세일", rating: 4.7, reviews: 85, hidden: false, img: "https://images.unsplash.com/photo-1520975954732-35dd22299614?auto=format&fit=crop&w=600&q=80" },
+      { id: 4, category: "TOP", tags: ["BLOCKCORE", "TIMESALE"], name: "26SS 스포티 스트라이프 블록코어 티셔츠", discount: "25%", priceNum: 33750, price: "33,750", badge: "⚡ 오늘만 이가격", rating: 4.6, reviews: 52, hidden: false, img: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=600&q=80" },
+      { id: 5, category: "PANTS", tags: ["OVERFIT"], name: "와이드 카고 조거 팬츠", discount: "20%", priceNum: 47200, price: "47,200", badge: "NEW", rating: 4.9, reviews: 31, hidden: false, img: "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=600&q=80" },
+      { id: 6, category: "OUTER", tags: ["WINDBREAKER"], name: "라이트웨이트 러닝 포케블 자켓", discount: "10%", priceNum: 58500, price: "58,500", badge: "HOT", rating: 4.5, reviews: 19, hidden: false, img: "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?auto=format&fit=crop&w=600&q=80" },
+      { id: 7, category: "ACC", tags: ["BLOCKCORE"], name: "빈티지 볼캡 & 후드 워머 세트", discount: "35%", priceNum: 25300, price: "25,300", badge: "MD추천", rating: 4.8, reviews: 67, hidden: false, img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=600&q=80" },
+      { id: 8, category: "PANTS", tags: ["TIMESALE"], name: "워싱 딥 블루 와이드 데님", discount: "50%", priceNum: 39500, price: "39,500", badge: "반값특가", rating: 4.9, reviews: 142, hidden: false, img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=600&q=80" }
+    ];
+
+    let qnaList = [
+      { id: 1, title: "배송이 언제 출발하는지 알고 싶습니다.", content: "안녕하세요! 어제 결제 완료했는데 언제쯤 배송이 시작되나요?", author: "user1" },
+      { id: 2, title: "사이즈 재입고 일정 안내 부탁드립니다.", content: "오버핏 자켓 L 사이즈 재입고 예정이 있을까요?", author: "guest" }
+    ];
+
+    let currentCategory = 'ALL';
+    let searchQuery = '';
+    let currentSort = 'recommended';
+    let cart = [];
+    let currentUser = null;
+    let showHiddenProductsMode = false;
+    let onConfirmYesAction = null;
+    let discountRate = 0;
+
+    // 2. 공통 유틸리티
+    function showToast(msg) {
+      const toast = document.getElementById('toastMsg');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function recordRecentView(imgUrl) {
+      const widget = document.getElementById('recentWidget');
+      const img = document.getElementById('recentImg');
+      img.src = imgUrl;
+      widget.style.display = 'flex';
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+      renderProducts();
+    }
+
+    function handleSortChange() {
+      currentSort = document.getElementById('sortSelect').value;
+      renderProducts();
+    }
+
+    function askConfirm(title, message, onYes) {
+      document.getElementById('confirmModalTitle').innerText = title;
+      document.getElementById('confirmModalText').innerText = message;
+      onConfirmYesAction = onYes;
+      document.getElementById('confirmOverlay').classList.add('open');
+    }
+
+    function closeConfirmModal(isYes) {
+      document.getElementById('confirmOverlay').classList.remove('open');
+      if (isYes && typeof onConfirmYesAction === 'function') {
+        onConfirmYesAction();
+      }
+      onConfirmYesAction = null;
+    }
+
+    document.getElementById('confirmModalYesBtn').addEventListener('click', () => closeConfirmModal(true));
+
+    // 3. 로그인 / 관리자 모드
+    function handleLogin() {
+      const id = document.getElementById('loginId').value.trim();
+      const pw = document.getElementById('loginPw').value.trim();
+
+      if (id === 'root' && pw === '1234') {
+        currentUser = { id: 'root', name: '루트 관리자' };
+        showToast('👑 루트 계정으로 로그인 되었습니다.');
+        updateAuthUI();
+        toggleLoginModal(false);
+      } else {
+        alert('아이디 또는 비밀번호가 틀렸습니다. (루트: root / 1234)');
+      }
+    }
+
+    function handleLogout() {
+      askConfirm('로그아웃 확인', '정말 로그아웃 하시겠습니까?', () => {
+        currentUser = null;
+        showHiddenProductsMode = false;
+        updateAuthUI();
+        showToast('로그아웃 되었습니다.');
+      });
+    }
+
+    function updateAuthUI() {
+      const authBtnArea = document.getElementById('authBtnArea');
+      const rootBar = document.getElementById('rootControlBar');
+
+      if (currentUser && currentUser.id === 'root') {
+        authBtnArea.innerHTML = `
+          <button class="header-btn admin-btn" onclick="handleLogout()">
+            <span class="user-badge" style="color:#ff2768;">👑 root</span> (로그아웃)
+          </button>
+        `;
+        rootBar.style.display = 'flex';
+      } else {
+        authBtnArea.innerHTML = `
+          <button class="header-btn" onclick="toggleLoginModal(true)">🔑 로그인</button>
+        `;
+        rootBar.style.display = 'none';
+      }
+      renderProducts();
+      renderQnaList();
+    }
+
+    function toggleHideProduct(productId, event) {
+      event.stopPropagation();
+      const target = products.find(p => p.id === productId);
+      if (!target) return;
+
+      const actionText = target.hidden ? '숨김 해제' : '숨기기';
+      askConfirm('상품 상태 변경', `[${target.name}] 상품을 ${actionText} 처리하시겠습니까?`, () => {
+        target.hidden = !target.hidden;
+        renderProducts();
+      });
+    }
+
+    function toggleShowHiddenProducts() {
+      showHiddenProductsMode = !showHiddenProductsMode;
+      document.getElementById('hiddenToggleText').innerText = showHiddenProductsMode ? "👁️ 숨김 상품 숨기기" : "🙈 숨김 상품 같이 보기";
+      renderProducts();
+    }
+
+    // 4. 상품 및 문의 렌더링
+    function filterCategory(categoryKey, targetElement) {
+      currentCategory = categoryKey;
+      if (targetElement) {
+        document.querySelectorAll('.trend-tag').forEach(tag => tag.classList.remove('active'));
+        targetElement.classList.add('active');
+      }
+
+      const productContainer = document.getElementById('product-container');
+      const csPageContainer = document.getElementById('cs-page-container');
+
+      if (categoryKey === 'QNA') {
+        productContainer.style.display = 'none';
+        csPageContainer.style.display = 'block';
+        renderQnaList();
+      } else {
+        csPageContainer.style.display = 'none';
+        productContainer.style.display = 'grid';
+        renderProducts();
+      }
+    }
+
+    function renderProducts() {
+      const container = document.getElementById('product-container');
+      const isRoot = currentUser && currentUser.id === 'root';
+
+      let filtered = products.filter(item => {
+        if (!isRoot && item.hidden) return false;
+        if (isRoot && item.hidden && !showHiddenProductsMode) return false;
+        const matchesCat = currentCategory === 'ALL' || item.tags.includes(currentCategory);
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery);
+        return matchesCat && matchesSearch;
+      });
+
+      if (currentSort === 'priceLow') filtered.sort((a, b) => a.priceNum - b.priceNum);
+      else if (currentSort === 'priceHigh') filtered.sort((a, b) => b.priceNum - a.priceNum);
+      else if (currentSort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="no-products" style="grid-column: 1/-1; text-align:center; padding:50px; color:#868e96;">검색 및 조건에 맞는 상품이 없습니다.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => `
+        <div class="product-card ${item.hidden ? 'hidden-product' : ''}" onclick="recordRecentView('${item.img}')">
+          <div class="img-wrapper">
+            <img src="${item.img}" class="product-img">
+            ${isRoot ? `
+              <button class="btn-hide-toggle" onclick="toggleHideProduct(${item.id}, event)">
+                ${item.hidden ? '👁️‍🗨️ 숨김해제' : '👁️ 숨기기'}
+              </button>
+            ` : `
+              <span class="badge-urgent">${item.badge}</span>
+            `}
+            <button class="btn-wish" onclick="toggleWish(this, event)">♥</button>
+          </div>
+          <div class="card-body">
+            <span class="item-category">${item.category} ${item.hidden ? '(숨김상태)' : ''}</span>
+            <h3 class="item-title">${item.name}</h3>
+            <div class="rating-row">★ ${item.rating} <span class="rating-count">(${item.reviews})</span></div>
+            <div class="price-row">
+              <span class="discount">${item.discount}</span>
+              <span class="price">${item.price}원</span>
+            </div>
+            <div class="option-select" id="option-${item.id}" onclick="event.stopPropagation()">
+              <div class="size-btn selected" onclick="selectSize(this)">M</div>
+              <div class="size-btn" onclick="selectSize(this)">L</div>
+            </div>
+            <div class="action-group" onclick="event.stopPropagation()">
+              <button class="btn-cart" onclick="addToCart(${item.id})">담기</button>
+              <button class="btn-quick-buy" onclick="quickBuy(${item.id})">바로구매</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function submitQuestion() {
+      const title = document.getElementById('qnaTitle').value.trim();
+      const content = document.getElementById('qnaContent').value.trim();
+
+      if (!title || !content) return alert('문의 제목과 내용을 입력해 주세요.');
+
+      askConfirm('문의 작성', '입력하신 문의 내용으로 등록하시겠습니까?', () => {
+        qnaList.unshift({ id: Date.now(), title, content, author: currentUser ? currentUser.id : '비회원' });
+        document.getElementById('qnaTitle').value = '';
+        document.getElementById('qnaContent').value = '';
+        renderQnaList();
+        showToast('문의가 등록되었습니다.');
+      });
+    }
+
+    function renderQnaList() {
+      const boardList = document.getElementById('qnaBoardList');
+      const isRoot = currentUser && currentUser.id === 'root';
+
+      if (qnaList.length === 0) {
+        boardList.innerHTML = `<li style="text-align:center; color:#adb5bd; padding:20px 0;">등록된 문의가 없습니다.</li>`;
+        return;
+      }
+
+      boardList.innerHTML = qnaList.map(qna => `
+        <li class="board-item" onclick="openQnaDetail(${qna.id})">
+          <span class="board-subject">${qna.title}</span>
+          <div class="board-meta">
+            <span class="board-author">${qna.author}</span>
+            ${isRoot ? `<button class="btn-delete-qna" onclick="deleteQna(${qna.id}, event)">삭제</button>` : ''}
+          </div>
+        </li>
+      `).join('');
+    }
+
+    function deleteQna(qnaId, event) {
+      event.stopPropagation();
+      askConfirm('문의 삭제', '선택하신 문의글을 정말로 삭제하시겠습니까?', () => {
+        qnaList = qnaList.filter(q => q.id !== qnaId);
+        renderQnaList();
+        showToast('문의글이 삭제되었습니다.');
+      });
+    }
+
+    function openQnaDetail(qnaId) {
+      const qna = qnaList.find(q => q.id === qnaId);
+      if (!qna) return;
+      document.getElementById('qnaDetailTitle').innerText = qna.title;
+      document.getElementById('qnaDetailAuthor').innerText = `작성자: ${qna.author}`;
+      document.getElementById('qnaDetailContent').innerText = qna.content;
+      toggleQnaDetailModal(true);
+    }
+
+    // 5. REST API 연동 장바구니 관련 함수 (GET / POST / DELETE)
+    function fetchCartList() {
+      fetch('/api/cart')
+        .then(res => res.json())
+        .then(data => {
+          cart = data;
+          updateCartUI();
+        })
+        .catch(err => console.error("서버 장바구니 조회 에러:", err));
+    }
+
+    function addToCart(id) {
+  const product = products.find(p => p.id === id);
+  const size = document.querySelector(`#option-${id} .size-btn.selected`).innerText;
+
+  const cartData = {
+    productId: product.id,
+    name: product.name,
+    price: product.priceNum,
+    size: size,
+    qty: 1,
+    img: product.img
+  };
+
+  // 1. [브라우저 콘솔] 서버로 보내는 JSON 출력
+  console.log("📤 [REQ -> Server] 장바구니 추가 요청 JSON 데이터:", cartData);
+
+  fetch('/api/cart', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cartData)
+  })
+  .then(res => res.json())
+  .then(data => {
+    // 2. [브라우저 콘솔] 서버에서 응답받은 최신 장바구니 JSON 목록 출력
+    console.log("📥 [RES <- Server] 서버 응답 최신 장바구니 목록:", data);
+
+    cart = data;
+    updateCartUI();
+    showToast('🛒 서버 장바구니에 JSON으로 저장되었습니다!');
+  })
+  .catch(err => console.error("❌ 장바구니 추가 실패:", err));
+}
+
+    function updateCartUI() {
+      document.getElementById('cart-count').innerText = cart.reduce((sum, i) => sum + i.qty, 0);
+      const container = document.getElementById('cartListContainer');
+
+      if (!cart || cart.length === 0) {
+        container.innerHTML = `<div class="empty-cart"><p>장바구니가 비어있습니다.</p></div>`;
+        document.getElementById('totalPrice').innerText = "0원";
+        return;
+      }
+
+      let grandTotal = 0;
+      container.innerHTML = cart.map((item) => {
+        const itemTotal = item.price * item.qty;
+        grandTotal += itemTotal;
+        return `
+          <div class="cart-item">
+            <img src="${item.img}" class="cart-item-img">
+            <div class="cart-item-info">
+              <div class="cart-item-name">${item.name}</div>
+              <div style="font-size:0.75rem; color:#868e96;">사이즈: ${item.size}</div>
+              <div class="cart-item-price">${itemTotal.toLocaleString()}원</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:0.85rem;">수량: ${item.qty}개</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('totalPrice').innerText = `${grandTotal.toLocaleString()}원`;
+      updateFinalPrice();
+    }
+
+    function applyCoupon() {
+      const code = document.getElementById('couponCode').value.trim().toUpperCase();
+      if (code === 'WELCOME10') {
+        discountRate = 0.1;
+        showToast('🏷️ 10% 할인 쿠폰이 적용되었습니다!');
+        updateFinalPrice();
+      } else {
+        alert('유효하지 않은 쿠폰 코드입니다.');
+      }
+    }
+
+    function updateFinalPrice() {
+      const totalRaw = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      const finalPrice = Math.floor(totalRaw * (1 - discountRate));
+      document.getElementById('modalFinalPrice').innerText = `${finalPrice.toLocaleString()}원`;
+    }
+
+    function quickBuy(id) { addToCart(id); checkout(); }
+    
+    function checkout() {
+      if (cart.length === 0) return alert('장바구니가 비어있습니다.');
+      updateFinalPrice();
+      toggleCartModal(false);
+      toggleCheckoutModal(true);
+    }
+
+    function processPayment() {
+      askConfirm('결제 진행', '입력하신 정보로 최종 결제를 진행하시겠습니까?', () => {
+        fetch('/api/cart', { method: 'DELETE' })
+          .then(res => res.json())
+          .then(data => {
+            cart = data;
+            discountRate = 0;
+            document.getElementById('couponCode').value = '';
+            updateCartUI();
+            toggleCheckoutModal(false);
+            showToast('🎉 결제가 완료되어 서버 장바구니가 비워졌습니다!');
+          });
+      });
+    }
+
+    // 6. 모달 제어 및 이벤트
+    function toggleQnaDetailModal(open) { document.getElementById('qnaDetailOverlay').classList.toggle('open', open); }
+    function toggleLoginModal(open) { document.getElementById('loginOverlay').classList.toggle('open', open); }
+    function toggleCartModal(open) { document.getElementById('cartOverlay').classList.toggle('open', open); }
+    function toggleCheckoutModal(open) { document.getElementById('checkoutOverlay').classList.toggle('open', open); }
+    function closeModalOnBg(e, id) { if (e.target.id === id) document.getElementById(id).classList.remove('open'); }
+    
+    function toggleWish(btn, event) {
+      event.stopPropagation();
+      btn.classList.toggle('active');
+      showToast(btn.classList.contains('active') ? '♥ 관심 상품에 추가되었습니다.' : '관심 상품에서 삭제되었습니다.');
+    }
+
+    function selectSize(btn) {
+      btn.parentElement.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    // BGM
+    const bgm = document.getElementById('bgmAudio');
+    if (bgm) bgm.volume = 0.3;
+    function initBGM() {
+      if (bgm) {
+        bgm.play().then(() => {
+          document.removeEventListener('click', initBGM);
+        }).catch(err => console.log("Autoplay blocked:", err));
+      }
+    }
+    document.addEventListener('click', initBGM);
+
+    // 7. 페이지 초기 구동
+    document.addEventListener("DOMContentLoaded", () => {
+      renderProducts();
+      fetchCartList();
+    });
+  </script>
+</body>
+</html>

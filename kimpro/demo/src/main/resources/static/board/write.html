@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Godhub - 글 작성</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo" onclick="location.href='/'">Godhub</div>
+    <nav class="top-nav">
+      <a href="/">홈</a>
+      <a href="about.html">사이트 소개</a>
+      <a href="board/list.html">Q&A 게시판</a>
+    </nav>
+  </header>
+
+  <div class="container" style="padding: 30px 20px; max-width:600px;">
+    <h2>✏️ 문의사항 작성</h2>
+    <form onsubmit="handleSubmit(event)">
+      <div style="margin-bottom:15px;">
+        <label>제목</label><br>
+        <input type="text" id="title" required style="width:100%; padding:10px; margin-top:5px;">
+      </div>
+      <div style="margin-bottom:15px;">
+        <label>내용</label><br>
+        <textarea id="content" rows="5" required style="width:100%; padding:10px; margin-top:5px;"></textarea>
+      </div>
+      <button type="submit" class="header-btn" style="background:#212529; color:white; width:100%;">등록하기</button>
+    </form>
+  </div>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      alert('문의글이 성공적으로 등록되었습니다.');
+      location.href = 'board/list.html';
+    }
+  </script>
+</body>
+</html>

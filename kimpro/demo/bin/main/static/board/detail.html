@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Godhub - 글 상세 보기</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo" onclick="location.href='/'">Godhub</div>
+    <nav class="top-nav">
+      <a href="/">홈</a>
+      <a href="about.html">사이트 소개</a>
+      <a href="board/list.html">Q&A 게시판</a>
+    </nav>
+  </header>
+
+  <div class="container" style="padding: 30px 20px;">
+    <h2 id="detail-title">게시글 제목</h2>
+    <p style="color:#868e96; font-size:0.9rem;" id="detail-writer">작성자: -</p>
+    <hr style="border:0.5px solid #eee; margin:20px 0;">
+    <div id="detail-content" style="min-height:150px; line-height:1.6;">
+      게시글 내용이 들어가는 영역입니다.
+    </div>
+    <button onclick="location.href='/board/list.html'" class="header-btn">목록으로 돌아가기</button>
+  </div>
+</body>
+</html>
