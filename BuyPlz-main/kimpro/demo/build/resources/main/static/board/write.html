@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Godhub - Q&A 글작성</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
+        body { background-color: #f8f9fa; color: #333; padding: 20px; }
+        
+        /* 상단 네비게이션 */
+        nav { background: #fff; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        nav a { margin-right: 15px; text-decoration: none; color: #555; font-weight: bold; }
+        nav a:hover { color: #ff2768; }
+        
+        /* 메인 컨테이너 */
+        main { background: #fff; padding: 35px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-width: 800px; margin: 0 auto; }
+        h1 { margin-bottom: 25px; font-size: 24px; color: #111; border-bottom: 2px solid #222; padding-bottom: 12px; }
+        
+        /* 폼 레이아웃 */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #444; font-size: 15px; }
+        .form-control { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; outline: none; transition: border-color 0.2s; }
+        .form-control:focus { border-color: #ff2768; }
+        textarea.form-control { resize: vertical; min-height: 200px; line-height: 1.6; }
+        
+        /* 버튼 스타일 */
+        .btn-group { display: flex; gap: 10px; margin-top: 30px; justify-content: flex-end; }
+        .btn { display: inline-block; padding: 12px 24px; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; font-size: 15px; transition: background-color 0.2s; }
+        .btn-primary { background-color: #ff2768; }
+        .btn-primary:hover { background-color: #0fe71a; }
+        .btn-secondary { background-color: #6c757d; }
+        .btn-secondary:hover { background-color: #5a6268; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/">홈 (메인 페이지)</a>
+        <a href="/about.html">사이트 소개</a>
+        <a href="/board/list.html">게시판</a>
+        <a href="/board/write.html">글작성</a>
+    </nav>
+
+    <main>
+        <h1>Q&A 문의글 작성</h1>
+        <form id="write-form">
+            <div class="form-group">
+                <label for="title">제목</label>
+                <input type="text" id="title" class="form-control" placeholder="제목을 입력하세요" required>
+            </div>
+
+            <div class="form-group">
+                <label for="writer">작성자</label>
+                <input type="text" id="writer" class="form-control" placeholder="작성자 이름을 입력하세요" required>
+            </div>
+
+            <div class="form-group">
+                <label for="content">내용</label>
+                <textarea id="content" class="form-control" placeholder="문의 내용을 상세히 작성해 주세요." required></textarea>
+            </div>
+
+            <div class="btn-group">
+                <a class="btn btn-secondary" href="/board/list.html">취소</a>
+                <button type="submit" class="btn btn-primary">등록하기</button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        document.getElementById("write-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const boardData = {
+                title: document.getElementById("title").value,
+                writer: document.getElementById("writer").value,
+                content: document.getElementById("content").value,
+                views: 0,
+                likes: 0
+            };
+
+            fetch("/api/boards", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(boardData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("문의글이 성공적으로 데이터베이스에 저장되었습니다!");
+                    location.href = "/board/list.html";
+                } else {
+                    alert("저장에 실패했습니다. 다시 시도해 주세요.");
+                }
+            })
+            .catch(err => console.error("오류 발생:", err));
+        });
+    </script>
+</body>
+</html>
