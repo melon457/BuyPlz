@@ -3,24 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 조별 과제 조건: 사이트 제목 변경 -->
   <title>Godhub - 우리 조 패션 쇼핑몰</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-
   <header>
     <div class="logo-area">
       <div class="logo" onclick="location.href='/'">Godhub</div>
       
-      <!-- 5개 페이지 연결 네비게이션 -->
+      <!-- 상단 네비게이션 바 (고객센터/문의 추가됨) -->
       <nav class="top-nav">
-        <a href="/" class="active">홈</a>
+        <a href="javascript:void(0)" class="active" onclick="filterCategory('ALL', this)">홈</a>
         <a href="about.html">사이트 소개</a>
         <a href="board/list.html">게시판</a>
         <a href="board/write.html">글작성</a>
         <a href="board/detail.html?id=1">상세보기</a>
+        <a href="javascript:void(0)" onclick="filterCategory('QNA', this)">💬 고객센터/문의</a>
       </nav>
     </div>
     
@@ -39,9 +38,8 @@
   </header>
 
   <div class="container">
-    <!-- 조별 과제 조건: index.html 안내 문구 변경 -->
     <div class="project-banner">
-      📢 <b>[１조 프로젝트]</b>외형만 패션 커뮤니티 쇼핑몰 Godhub에 오신 것을 환영합니다!
+      📢 <b>[１조 프로젝트]</b>패션 커뮤니티 쇼핑몰 Godhub에 오신 것을 환영합니다!
     </div>
 
     <div id="rootControlBar" style="display:none; margin-bottom:16px; background:#212529; color:white; padding:12px 16px; border-radius:10px; justify-content:space-between; align-items:center;">
@@ -51,6 +49,7 @@
       </button>
     </div>
 
+    <!-- 카테고리 필터 영역 (고객센터 버튼 제거됨) -->
     <div class="filter-wrapper">
       <div class="trend-bar">
         <div class="trend-tag active" onclick="filterCategory('ALL', this)">🔥 전체보기</div>
@@ -58,7 +57,6 @@
         <div class="trend-tag" onclick="filterCategory('OVERFIT', this)">🧥 오버핏 자켓</div>
         <div class="trend-tag" onclick="filterCategory('WINDBREAKER', this)">👖 윈드브레이커</div>
         <div class="trend-tag" onclick="filterCategory('TIMESALE', this)">⏰ 타임세일</div>
-        <div class="trend-tag" style="background:#fff0f3; color:#ff2768; border-color:#ff2768;" onclick="filterCategory('QNA', this)">💬 고객센터/문의</div>
       </div>
 
       <select class="sort-select" id="sortSelect" onchange="handleSortChange()">
@@ -89,10 +87,9 @@
 
         <div class="cs-info-box">
           <div class="cs-title" style="margin-bottom: 8px;">고객상담센터</div>
-          <div class="cs-phone">1985-0205</div>
+          <div class="cs-phone">042-8282</div>
           <div class="cs-desc">
-            평일 10:00 - 18:00 (점심 11:00 - 17:00)<br>
-            <b>루트 계정: 아이디(안알려줌) / 비번(뭘까요)</b>
+            평일 10:00 - 18:00 (점심 12:00 - 13:00)<br>
           </div>
         </div>
       </div>
@@ -127,8 +124,8 @@
         <button class="close-btn" onclick="toggleLoginModal(false)">✕</button>
       </div>
       <div style="display:flex; flex-direction:column; gap:10px;">
-        <input type="text" id="loginId" class="input-field" placeholder="아이디">
-        <input type="password" id="loginPw" class="input-field" placeholder="비밀번호">
+        <input type="text" id="loginId" class="input-field" placeholder="아이디 (뭘까요?)">
+        <input type="password" id="loginPw" class="input-field" placeholder="비밀번호 (안알려주지~!)">
       </div>
       <button class="btn-action" onclick="handleLogin()">로그인하기</button>
     </div>
@@ -194,7 +191,7 @@
       { id: 3, category: "OUTER", tags: ["OVERFIT", "TIMESALE"], name: "비건 레더 오버핏 자켓", discount: "40%", priceNum: 89400, price: "89,400", badge: "⏰ 타임세일", rating: 4.7, reviews: 85, hidden: false, img: "https://images.unsplash.com/photo-1520975954732-35dd22299614?auto=format&fit=crop&w=600&q=80" },
       { id: 4, category: "TOP", tags: ["BLOCKCORE", "TIMESALE"], name: "26SS 스포티 스트라이프 블록코어 티셔츠", discount: "25%", priceNum: 33750, price: "33,750", badge: "⚡ 오늘만 이가격", rating: 4.6, reviews: 52, hidden: false, img: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=600&q=80" },
       { id: 5, category: "PANTS", tags: ["OVERFIT"], name: "와이드 카고 조거 팬츠", discount: "20%", priceNum: 47200, price: "47,200", badge: "NEW", rating: 4.9, reviews: 31, hidden: false, img: "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=600&q=80" },
-      { id: 6, category: "OUTER", tags: ["WINDBREAKER"], name: "라이트웨이트 러닝 포케`블 자켓", discount: "10%", priceNum: 58500, price: "58,500", badge: "HOT", rating: 4.5, reviews: 19, hidden: false, img: "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?auto=format&fit=crop&w=600&q=80" },
+      { id: 6, category: "OUTER", tags: ["WINDBREAKER"], name: "라이트웨이트 러닝 포케블 자켓", discount: "10%", priceNum: 58500, price: "58,500", badge: "HOT", rating: 4.5, reviews: 19, hidden: false, img: "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?auto=format&fit=crop&w=600&q=80" },
       { id: 7, category: "ACC", tags: ["BLOCKCORE"], name: "빈티지 볼캡 & 후드 워머 세트", discount: "35%", priceNum: 25300, price: "25,300", badge: "MD추천", rating: 4.8, reviews: 67, hidden: false, img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=600&q=80" },
       { id: 8, category: "PANTS", tags: ["TIMESALE"], name: "워싱 딥 블루 와이드 데님", discount: "50%", priceNum: 39500, price: "39,500", badge: "반값특가", rating: 4.9, reviews: 142, hidden: false, img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=600&q=80" }
     ];
@@ -260,7 +257,7 @@
       const id = document.getElementById('loginId').value.trim();
       const pw = document.getElementById('loginPw').value.trim();
 
-      if (id === '호날두' && pw === 'Siuuuuu') {
+      if (id === 'root' && pw === '1234') {
         currentUser = { id: 'root', name: '루트 관리자' };
         showToast('👑 루트 계정으로 로그인 되었습니다.');
         updateAuthUI();
@@ -322,19 +319,22 @@
     function filterCategory(categoryKey, targetElement) {
       currentCategory = categoryKey;
       if (targetElement) {
-        document.querySelectorAll('.trend-tag').forEach(tag => tag.classList.remove('active'));
+        document.querySelectorAll('.top-nav a, .trend-tag').forEach(tag => tag.classList.remove('active'));
         targetElement.classList.add('active');
       }
 
       const productContainer = document.getElementById('product-container');
       const csPageContainer = document.getElementById('cs-page-container');
+      const filterWrapper = document.querySelector('.filter-wrapper');
 
       if (categoryKey === 'QNA') {
         productContainer.style.display = 'none';
+        if (filterWrapper) filterWrapper.style.display = 'none';
         csPageContainer.style.display = 'block';
         renderQnaList();
       } else {
         csPageContainer.style.display = 'none';
+        if (filterWrapper) filterWrapper.style.display = 'flex';
         productContainer.style.display = 'grid';
         renderProducts();
       }
@@ -448,7 +448,7 @@
       toggleQnaDetailModal(true);
     }
 
-    //API 연동
+    // API 연동
     function fetchCartList() {
       fetch('/api/cart')
         .then(res => res.json())
@@ -460,37 +460,35 @@
     }
 
     function addToCart(id) {
-  const product = products.find(p => p.id === id);
-  const size = document.querySelector(`#option-${id} .size-btn.selected`).innerText;
+      const product = products.find(p => p.id === id);
+      const size = document.querySelector(`#option-${id} .size-btn.selected`).innerText;
 
-  const cartData = {
-    productId: product.id,
-    name: product.name,
-    price: product.priceNum,
-    size: size,
-    qty: 1,
-    img: product.img
-  };
+      const cartData = {
+        productId: product.id,
+        name: product.name,
+        price: product.priceNum,
+        size: size,
+        qty: 1,
+        img: product.img
+      };
 
-  // 1 서버로 보내는 JSON 출력
-  console.log("📤 [REQ -> Server] 장바구니 추가 요청 JSON 데이터:", cartData);
+      console.log("📤 [REQ -> Server] 장바구니 추가 요청 JSON 데이터:", cartData);
 
-  fetch('/api/cart', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cartData)
-  })
-  .then(res => res.json())
-  .then(data => {
-    // 2 서버에서 응답받은 JSON 목록 출력
-    console.log("📥서버 응답 최신 장바구니 목록:", data);
+      fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cartData)
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log("📥서버 응답 최신 장바구니 목록:", data);
 
-    cart = data;
-    updateCartUI();
-    showToast('🛒 서버 장바구니에 JSON으로 저장되었습니다!');
-  })
-  .catch(err => console.error("❌ 장바구니 추가 실패:", err));
-}
+        cart = data;
+        updateCartUI();
+        showToast('🛒 서버 장바구니에 JSON으로 저장되었습니다!');
+      })
+      .catch(err => console.error("❌ 장바구니 추가 실패:", err));
+    }
 
     function updateCartUI() {
       document.getElementById('cart-count').innerText = cart.reduce((sum, i) => sum + i.qty, 0);
@@ -583,18 +581,6 @@
       btn.parentElement.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
     }
-
-    // BGM
-    const bgm = document.getElementById('bgmAudio');
-    if (bgm) bgm.volume = 0.3;
-    function initBGM() {
-      if (bgm) {
-        bgm.play().then(() => {
-          document.removeEventListener('click', initBGM);
-        }).catch(err => console.log("Autoplay blocked:", err));
-      }
-    }
-    document.addEventListener('click', initBGM);
 
     // 7. 페이지 초기 구동
     document.addEventListener("DOMContentLoaded", () => {
