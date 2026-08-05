@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 상세 보기</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .detail-container {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-control-static {
+            padding: 8px 0;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary { background-color: #007bff; }
+        .btn-success { background-color: #28a745; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-secondary { background-color: #6c757d; }
+    </style>
+</head>
+<body>
+
+<div class="detail-container">
+    <h2>게시글 상세 정보</h2>
+    
+    <div class="form-group">
+        <label>제목</label>
+        <div id="titleView" class="form-control-static"></div>
+    </div>
+    
+    <div class="form-group">
+        <label>작성자</label>
+        <div id="authorView" class="form-control-static"></div>
+    </div>
+    
+    <div class="form-group">
+        <label>작성일</label>
+        <div id="createdAtView" class="form-control-static"></div>
+    </div>
+    
+    <div class="form-group">
+        <label>내용</label>
+        <div id="contentView" class="form-control-static" style="white-space: pre-wrap;"></div>
+    </div>
+
+    <div class="btn-group" id="buttonArea">
+        <button id="editBtn" class="btn btn-primary" onclick="enableEditMode()">수정</button>
+        <button id="deleteBtn" class="btn btn-danger" onclick="deleteBoard()">삭제</button>
+        <a href="/board/list.html" class="btn btn-secondary">목록으로</a>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const boardId = urlParams.get('id');
+
+    let currentBoardData = {};
+
+    // 데이터 조회
+    function loadBoard() {
+        if (!boardId) {
+            alert('잘못된 접근입니다.');
+            window.location.href = '/board/list.html';
+            return;
+        }
+
+        fetch(`/api/boards/${boardId}`)
+            .then(response => {
+                if (!response.ok) throw new Error('게시글을 찾을 수 없습니다.');
+                return response.json();
+            })
+            .then(data => {
+                currentBoardData = data;
+                document.getElementById('titleView').innerText = data.title;
+                document.getElementById('authorView').innerText = data.author;
+                document.getElementById('createdAtView').innerText = new Date(data.createdAt).toLocaleString();
+                document.getElementById('contentView').innerText = data.content;
+            })
+            .catch(error => {
+                alert(error.message);
+                window.location.href = '/board/list.html';
+            });
+    }
+
+    // 수정 모드 전환
+    function enableEditMode() {
+        document.getElementById('titleView').innerHTML = `<input type="text" id="editTitle" value="${escapeHtml(currentBoardData.title)}">`;
+        document.getElementById('authorView').innerHTML = `<input type="text" id="editAuthor" value="${escapeHtml(currentBoardData.author)}">`;
+        document.getElementById('contentView').innerHTML = `<textarea id="editContent">${escapeHtml(currentBoardData.content)}</textarea>`;
+
+        // 버튼 변경
+        const buttonArea = document.getElementById('buttonArea');
+        buttonArea.innerHTML = `
+            <button class="btn btn-success" onclick="submitUpdate()">저장</button>
+            <button class="btn btn-secondary" onclick="location.reload()">취소</button>
+        `;
+    }
+
+    // 수정 요청
+    function submitUpdate() {
+        const title = document.getElementById('editTitle').value;
+        const author = document.getElementById('editAuthor').value;
+        const content = document.getElementById('editContent').value;
+
+        if (!title || !author || !content) {
+            alert('모든 필드를 입력해 주세요.');
+            return;
+        }
+
+        const updateData = { title, author, content };
+
+        fetch(`/api/boards/${boardId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('수정되었습니다.');
+                window.location.reload();
+            } else {
+                alert('수정에 실패했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('수정 중 오류가 발생했습니다.');
+        });
+    }
+
+    // 삭제 요청
+    function deleteBoard() {
+        if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) return;
+
+        fetch(`/api/boards/${boardId}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('삭제되었습니다.');
+                window.location.href = '/board/list.html';
+            } else {
+                alert('삭제에 실패했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('삭제 중 오류가 발생했습니다.');
+        });
+    }
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    window.onload = loadBoard;
+</script>
+
+</body>
+</html>

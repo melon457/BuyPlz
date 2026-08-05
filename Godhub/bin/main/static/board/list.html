@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Godhub - 고객 Q&A 게시판</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
+        body { background-color: #f8f9fa; color: #333; padding: 20px; }
+        nav { background: #fff; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        nav a { margin-right: 15px; text-decoration: none; color: #555; font-weight: bold; }
+        nav a:hover { color: #ff2768; }
+        main { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-width: 1000px; margin: 0 auto; }
+        h1 { margin-bottom: 20px; font-size: 24px; color: #111; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #eee; }
+        th { background-color: #f1f3f5; font-weight: 600; color: #495057; }
+        td.title-cell { text-align: left; cursor: pointer; color: #228be6; font-weight: 500; }
+        td.title-cell:hover { text-decoration: underline; color: #1c7ed6; }
+        .btn { display: inline-block; padding: 10px 20px; background-color: #ff2768; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; }
+        .btn:hover { background-color: #e02058; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/">홈 (메인 페이지)</a>
+        <a href="/about.html">사이트 소개</a>
+        <a href="/board/list.html">게시판</a>
+        <a href="/board/write.html">글작성</a>
+    </nav>
+
+    <main>
+        <h1>고객 Q&A 게시판</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 8%;">번호</th>
+                    <th style="width: 45%;">제목</th>
+                    <th style="width: 15%;">작성자</th>
+                    <th style="width: 16%;">작성일</th>
+                    <th style="width: 8%;">조회수</th>
+                    <th style="width: 8%;">좋아요</th>
+                </tr>
+            </thead>
+            <tbody id="board-list">
+                <tr>
+                    <td colspan="6">게시글을 불러오는 중...</td>
+                </tr>
+            </tbody>
+        </table>
+        <a class="btn" href="/board/write.html">글쓰기</a>
+    </main>
+
+    <script>
+        fetchBoards();
+
+        function fetchBoards() {
+            fetch("/api/boards")
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById("board-list");
+                list.innerHTML = "";
+                
+                if (!data || data.length === 0) {
+                    list.innerHTML = '<tr><td colspan="6">등록된 게시글이 없습니다.</td></tr>';
+                    return;
+                }
+
+                data.forEach(board => {
+                    const row = document.createElement("tr");
+                    const formattedDate = board.createdDate 
+                        ? board.createdDate.substring(0, 10) 
+                        : '-';
+
+                    row.innerHTML = `
+                        <td>${board.id}</td>
+                        <td class="title-cell" onclick="goDetail(${board.id})">${board.title}</td>
+                        <td>${board.writer}</td>
+                        <td>${formattedDate}</td>
+                        <td>${board.views ?? 0}</td>
+                        <td>${board.likes ?? 0}</td>
+                    `;
+                    list.appendChild(row);
+                });
+            })
+            .catch(err => console.error("데이터 로드 실패:", err));
+        }
+
+        function goDetail(id) {
+            location.href = "/board/detail.html?id=" + id;
+        }
+    </script>
+</body>
+</html>
